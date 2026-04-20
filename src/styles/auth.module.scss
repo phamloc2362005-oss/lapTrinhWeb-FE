@@ -155,6 +155,25 @@ $shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0,
         }
     }
 
+    .forgot-wrapper {
+        max-width: 34rem !important;
+    }
+
+    .forgot-description {
+        color: #5f6368;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: -8px 0 20px;
+    }
+
+    .forgot-steps {
+        margin-bottom: 24px;
+    }
+
+    .resend-link {
+        padding-left: 0;
+    }
+
     .auth-center .wrapper {
         max-width: 28rem;
         width: 100%;

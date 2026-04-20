@@ -5,10 +5,13 @@ import {
   RouterProvider,
   useLocation,
 } from "react-router-dom";
+import { ConfigProvider } from 'antd';
+import viVN from 'antd/locale/vi_VN';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import NotFound from 'components/share/not.found';
 import Loading from 'components/share/loading';
 import LoginPage from 'pages/auth/login';
+import ForgotPasswordPage from 'pages/auth/forgot-password';
 import RegisterPage from 'pages/auth/register';
 import LayoutAdmin from 'components/admin/layout.admin';
 import ProtectedRoute from 'components/share/protected-route.ts';
@@ -158,11 +161,17 @@ export default function App() {
       path: "/register",
       element: <RegisterPage />,
     },
+    {
+      path: "/forgot-password",
+      element: <ForgotPasswordPage />,
+    },
   ]);
 
   return (
     <>
-      <RouterProvider router={router} />
+      <ConfigProvider locale={viVN}>
+        <RouterProvider router={router} />
+      </ConfigProvider>
     </>
   )
 }
