@@ -20,8 +20,8 @@ const CompanyCard = (props: IProps) => {
     const [current, setCurrent] = useState(1);
     const [pageSize, setPageSize] = useState(4);
     const [total, setTotal] = useState(0);
-    const [filter, setFilter] = useState("");
-    const [sortQuery, setSortQuery] = useState("sort=updatedAt,desc");
+    const [filter] = useState("");
+    const [sortQuery] = useState("sort=updatedAt,desc");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -45,7 +45,6 @@ const CompanyCard = (props: IProps) => {
         }
         setIsLoading(false)
     }
-
 
     const handleOnchangePage = (pagination: { current: number, pageSize: number }) => {
         if (pagination && pagination.current !== current) {
@@ -71,7 +70,7 @@ const CompanyCard = (props: IProps) => {
                     <Row gutter={[20, 20]}>
                         <Col span={24}>
                             <div className={isMobile ? styles["dflex-mobile"] : styles["dflex-pc"]}>
-                                <span className={styles["title"]}>Nhà Tuyển Dụng Hàng Đầu</span>
+                                <span className={styles["title"]}>Nhà tuyển dụng hàng đầu</span>
                                 {!showPagination &&
                                     <Link to="company">Xem tất cả</Link>
                                 }

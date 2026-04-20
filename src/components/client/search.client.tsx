@@ -17,7 +17,7 @@ const SearchClient = () => {
         value: string;
     }[]>([]);
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         if (location.search) {
@@ -30,14 +30,14 @@ const SearchClient = () => {
                 form.setFieldValue("skills", querySkills.split(","))
             }
         }
-    }, [location.search])
+    }, [location.search, form, searchParams])
 
     useEffect(() => {
         fetchSkill();
     }, [])
 
     const fetchSkill = async () => {
-        let query = `page=1&size=100&sort=createdAt,desc`;
+        const query = `page=1&size=100&sort=createdAt,desc`;
 
         const res = await callFetchAllSkill(query);
         if (res && res.data) {
@@ -65,7 +65,7 @@ const SearchClient = () => {
         if (!query) {
             notification.error({
                 message: 'Có lỗi xảy ra',
-                description: "Vui lòng chọn tiêu chí để search"
+                description: "Vui lòng chọn tiêu chí để tìm kiếm"
             });
             return;
         }
@@ -74,7 +74,7 @@ const SearchClient = () => {
 
     return (
         <div className="search-client">
-            <h1>Việc Làm IT Cho Developer "Chất"</h1>
+            <h1>Việc Làm IT Cho Developer Chất Lượng</h1>
             <ProForm
                 form={form}
                 onFinish={onFinish}
@@ -126,7 +126,7 @@ const SearchClient = () => {
                         </ProForm.Item>
                     </Col>
                     <Col span={24} md={4}>
-                        <Button type='primary' block onClick={() => form.submit()}>Search</Button>
+                        <Button type='primary' block onClick={() => form.submit()}>Tìm việc</Button>
                     </Col>
                 </Row>
             </ProForm>

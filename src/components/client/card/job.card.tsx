@@ -13,7 +13,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
-
 interface IProps {
     showPagination?: boolean;
 }
@@ -27,10 +26,10 @@ const JobCard = (props: IProps) => {
     const [current, setCurrent] = useState(1);
     const [pageSize, setPageSize] = useState(6);
     const [total, setTotal] = useState(0);
-    const [filter, setFilter] = useState("");
-    const [sortQuery, setSortQuery] = useState("sort=updatedAt,desc");
+    const [filter] = useState("");
+    const [sortQuery] = useState("sort=updatedAt,desc");
     const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const location = useLocation();
 
     useEffect(() => {
@@ -47,7 +46,6 @@ const JobCard = (props: IProps) => {
             query += `&${sortQuery}`;
         }
 
-        //check query string
         const queryLocation = searchParams.get("location");
         const querySkills = searchParams.get("skills")
         const queryExpertise = searchParams.get("expertise")
@@ -79,8 +77,6 @@ const JobCard = (props: IProps) => {
         setIsLoading(false);
     }
 
-
-
     const handleOnchangePage = (pagination: { current: number, pageSize: number }) => {
         if (pagination && pagination.current !== current) {
             setCurrent(pagination.current)
@@ -103,7 +99,7 @@ const JobCard = (props: IProps) => {
                     <Row gutter={[20, 20]}>
                         <Col span={24}>
                             <div className={isMobile ? styles["dflex-mobile"] : styles["dflex-pc"]}>
-                                <span className={styles["title"]}>Công Việc Mới Nhất</span>
+                                <span className={styles["title"]}>Công việc mới nhất</span>
                                 {!showPagination &&
                                     <Link to="job">Xem tất cả</Link>
                                 }
@@ -136,7 +132,6 @@ const JobCard = (props: IProps) => {
                                 </Col>
                             )
                         })}
-
 
                         {(!displayJob || displayJob && displayJob.length === 0)
                             && !isLoading &&

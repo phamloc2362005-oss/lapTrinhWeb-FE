@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CodeOutlined, ContactsOutlined, FireOutlined, LogoutOutlined, MenuFoldOutlined, RiseOutlined, TwitterOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, CodeOutlined, ContactsOutlined, FireOutlined, LogoutOutlined, MenuFoldOutlined, RiseOutlined, TwitterOutlined } from '@ant-design/icons';
 import { Avatar, Drawer, Dropdown, MenuProps, Space, message } from 'antd';
 import { Menu } from 'antd';
 import styles from '@/styles/client.module.scss';
@@ -13,7 +13,7 @@ import { setLogoutAction } from '@/redux/slice/accountSlide';
 import ManageAccount from './modal/manage.account';
 import JobMegaMenu from './job/job-mega-menu';
 
-const Header = (props: any) => {
+const Header = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
@@ -32,23 +32,26 @@ const Header = (props: any) => {
 
     const items: MenuProps['items'] = [
         {
-            label: <Link to={'/'}>Trang Chủ</Link>,
+            label: <Link to={'/'}>Trang chủ</Link>,
             key: '/',
             icon: <TwitterOutlined />,
         },
         {
-            label: <Link to={'/job'}>Việc Làm IT</Link>,
+            label: <Link to={'/job'}>Việc làm IT</Link>,
             key: '/job',
             icon: <CodeOutlined />,
         },
         {
-            label: <Link to={'/company'}>Top Công ty IT</Link>,
+            label: <Link to={'/company'}>Top công ty IT</Link>,
             key: '/company',
             icon: <RiseOutlined />,
+        },
+        {
+            label: <Link to={'/skills'}>Kỹ năng</Link>,
+            key: '/skills',
+            icon: <AppstoreOutlined />,
         }
     ];
-
-
 
     const onClick: MenuProps['onClick'] = (e) => {
         setCurrent(e.key);
@@ -56,7 +59,7 @@ const Header = (props: any) => {
 
     const handleLogout = async () => {
         const res = await callLogout();
-        if (res && res && +res.statusCode === 200) {
+        if (res && +res.statusCode === 200) {
             dispatch(setLogoutAction({}));
             message.success('Đăng xuất thành công');
             navigate('/')
@@ -75,7 +78,7 @@ const Header = (props: any) => {
         ...(user.role?.permissions?.length ? [{
             label: <Link
                 to={"/admin"}
-            >Trang Quản Trị</Link>,
+            >Trang quản trị</Link>,
             key: 'admin',
             icon: <FireOutlined />
         },] : []),
@@ -97,14 +100,20 @@ const Header = (props: any) => {
             <div className={styles["header-section"]}>
                 <div className={styles["container"]}>
                     {!isMobile ?
-                        <div style={{ display: "flex", gap: 30 }}>
+                        <div style={{ display: "flex", gap: 30, alignItems: "center" }}>
                             <div className={styles['brand']} >
-                                <FaReact onClick={() => navigate('/')} title='Hỏi Dân IT' />
+                                <div className={styles["brand-mark"]} onClick={() => navigate('/')} title='FindJobs'>
+                                    <FaReact />
+                                </div>
+                                <div className={styles["brand-copy"]} onClick={() => navigate('/')}>
+                                    <strong>FindJobs</strong>
+                                    <span>Nền tảng việc làm dành cho developer</span>
+                                </div>
                             </div>
                             <div className={styles['top-menu']}>
                                 <div className={styles["desktop-nav"]}>
                                     <Link className={current === '/' ? styles["nav-active"] : styles["nav-link"]} to={'/'}>
-                                        Trang Chủ
+                                        Trang chủ
                                     </Link>
                                     <Dropdown
                                         trigger={['hover']}
@@ -112,23 +121,26 @@ const Header = (props: any) => {
                                         dropdownRender={() => <JobMegaMenu />}
                                     >
                                         <span className={current.startsWith('/job') ? styles["nav-active"] : styles["nav-link"]}>
-                                            Việc Làm IT
+                                            Việc làm IT
                                         </span>
                                     </Dropdown>
                                     <Link className={current === '/company' ? styles["nav-active"] : styles["nav-link"]} to={'/company'}>
-                                        Top Công ty IT
+                                        Top công ty IT
+                                    </Link>
+                                    <Link className={current === '/skills' ? styles["nav-active"] : styles["nav-link"]} to={'/skills'}>
+                                        Kỹ năng
                                     </Link>
                                 </div>
                                 <div className={styles['extra']}>
                                     {isAuthenticated === false ?
                                         <div className={styles["guest-actions"]}>
-                                            <span className={styles["employer-link"]}>For Employers</span>
-                                            <Link to={'/login'} className={styles["signin-btn"]}>Sign In</Link>
+                                            <span className={styles["employer-link"]}>Không gian dành cho nhà tuyển dụng</span>
+                                            <Link to={'/login'} className={styles["signin-btn"]}>Đăng nhập</Link>
                                         </div>
                                         :
                                         <Dropdown menu={{ items: itemsDropdown }} trigger={['click']}>
                                             <Space style={{ cursor: "pointer" }}>
-                                                <span>Welcome {user?.name}</span>
+                                                <span>Xin chào {user?.name}</span>
                                                 <Avatar> {user?.name?.substring(0, 2)?.toUpperCase()} </Avatar>
                                             </Space>
                                         </Dropdown>
@@ -140,7 +152,10 @@ const Header = (props: any) => {
                         </div>
                         :
                         <div className={styles['header-mobile']}>
-                            <span>Your APP</span>
+                            <div className={styles["mobile-brand"]}>
+                                <strong>FindJobs</strong>
+                                <span>Tìm việc IT dễ hơn mỗi ngày</span>
+                            </div>
                             <MenuFoldOutlined onClick={() => setOpenMobileMenu(true)} />
                         </div>
                     }
