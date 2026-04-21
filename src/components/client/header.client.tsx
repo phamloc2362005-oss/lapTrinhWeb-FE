@@ -107,7 +107,7 @@ const Header = () => {
                                 </div>
                                 <div className={styles["brand-copy"]} onClick={() => navigate('/')}>
                                     <strong>FindJobs</strong>
-                                    <span>Nền tảng việc làm dành cho developer</span>
+                                    <span>Nơi lập trình viên chọn đúng hướng đi</span>
                                 </div>
                             </div>
                             <div className={styles['top-menu']}>

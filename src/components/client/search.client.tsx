@@ -72,8 +72,10 @@ const SearchClient = () => {
         navigate(`/job?${query}`);
     }
 
+    const isHomePage = location.pathname === '/';
+
     return (
-        <div className="search-client">
+        <div className={`search-client ${isHomePage ? 'search-client-home' : ''}`}>
             <h1>Việc Làm IT Cho Developer Chất Lượng</h1>
             <ProForm
                 form={form}
