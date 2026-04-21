@@ -160,3 +160,49 @@ $admin-text-muted: #5f6368;
         min-height: 160px;
     }
 }
+
+.dashboardPage {
+    display: grid;
+    gap: 16px;
+}
+
+.dashboardHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.refreshTag {
+    cursor: pointer;
+    user-select: none;
+    margin-inline-end: 0;
+}
+
+.dashboardCard {
+    border-radius: 12px;
+    border: 1px solid #e8edf5;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.cardIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13, 71, 161, 0.08);
+    color: $admin-primary;
+}
+
+.dashboardLists {
+    margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+    .dashboardHeaderRow {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
