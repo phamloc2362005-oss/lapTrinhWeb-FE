@@ -1,0 +1,184 @@
+Mục lục
+1. Tổng quan tách ADMIN vs USER
+2. USER onboarding
+3. ADMIN onboarding
+4. Danh sách file quan trọng
+5. Điểm cần cải thiện (riêng USER / ADMIN)
+
+1) Tổng quan tách ADMIN vs USER
+
+- Repo tách theo route prefix rõ ràng:
+  - USER: / + các route con job, company, skills (src/App.tsx:75-87).
+  - ADMIN: /admin + các route con company, user, job, resume, permission, role (src/App.tsx:91-151).
+
+- Tách theo layout:
+  - USER dùng LayoutClient (Header + Outlet + Footer) (src/App.tsx:38-59).
+  - ADMIN dùng LayoutAdmin (Sider/Menu + Header admin + Content) (src/App.tsx:92, src/components/admin/layout.admin.tsx:202-267).
+
+- Tách theo guard/quyền:
+  - Route admin bọc ProtectedRoute (src/App.tsx:97-149).
+  - ProtectedRoute kiểm tra isAuthenticated, loading, và chặn role NORMAL_USER (src/components/share/protected-route.ts/index.tsx:6-35).
+  - Chi tiết quyền chức năng trong từng trang/nút dùng Access + ALL_PERMISSIONS (src/components/share/access.tsx:10-50, src/config/permissions.ts:1-43).
+
+- Tách theo folder structure:
+  - src/pages/admin/* cho màn admin; src/pages/home|job|company|skills|auth/* cho user/auth.
+  - src/components/admin/* và src/components/client/*.
+  - src/styles/admin.module.scss, src/styles/client.module.scss, src/styles/auth.module.scss.
+
+2) USER onboarding
+
+2.1 Entry point, routes, layouts, pages chính
+- Entry app: Redux Provider bọc toàn app (src/main.tsx:7-12).
+- Router USER:
+  - / -> HomePage
+  - /job -> listing
+  - /job/:id -> detail (nhưng trang detail đang đọc ?id= query)
+  - /skills, /company, /company/:id
+  (src/App.tsx:75-87).
+- Layout USER:
+  - Header + Footer + scroll-top theo useLocation (src/App.tsx:38-58).
+- Trang chính:
+  - Home (src/pages/home/index.tsx:8-75)
+  - Job list/detail (src/pages/job/index.tsx:6-20, src/pages/job/detail.tsx:17-167)
+  - Company list/detail (src/pages/company/index.tsx:5-15, src/pages/company/detail.tsx:11-73)
+  - Skills (src/pages/skills/index.tsx:16-68)
+  - Auth: login/register/forgot (src/pages/auth/*.tsx).
+
+2.2 State management, data fetching, auth/guest flows
+- Redux Toolkit store tập trung (src/redux/store.ts:15-25).
+- account slice giữ auth state, user, permissions (src/redux/slice/accountSlide.ts:13-54).
+- App boot gọi fetchAccount() để restore session (trừ /login và /register) (src/App.tsx:66-73).
+- Login flow:
+  - callLogin -> lưu access_token localStorage -> setUserLoginInfo -> redirect callback/home (src/pages/auth/login.tsx:29-40).
+- Guest apply flow:
+  - mở ApplyModal, nếu chưa login thì chuyển /login?callback=currentUrl (src/components/client/modal/apply.modal.tsx:32-35).
+- Manage account modal gồm CV history, subscribe job theo skill, đổi mật khẩu (src/components/client/modal/manage.account.tsx:277-315).
+
+2.3 Components dùng chung, hooks, utils, types
+- Shared UI: header/footer/search/cards/modal/apply/manage account (src/components/client/...).
+- Shared platform components: Loading, NotFound, ProtectedRoute, Access (src/components/share/*).
+- Hooks:
+  - Không có custom hook riêng; chủ yếu React hooks + typed redux hooks useAppDispatch/useAppSelector (src/redux/hooks.ts:1-6).
+- Utils:
+  - slug, location map, permission grouping, method color (src/config/utils.ts:51-96).
+- Types:
+  - contract API, entity interfaces (src/types/backend.d.ts:1-182).
+
+2.4 Styling SCSS user (global + module), responsive
+- app.module.scss cho khung layout toàn app (src/styles/app.module.scss:7-16).
+- client.module.scss cho header/home/cards/footer/job detail (src/styles/client.module.scss:90-1060).
+- auth.module.scss cho login/register/forgot (src/styles/auth.module.scss:15-189).
+- Responsive:
+  - user layout breakpoint tại max-width:768, 769-1024 (src/styles/client.module.scss:741-826).
+  - auth chủ yếu style module, ít breakpoint riêng rõ ràng.
+
+2.5 Luồng gọi API và xử lý lỗi (USER)
+- API tập trung trong config/api.ts (src/config/api.ts:8-272).
+- Axios interceptor:
+  - gắn Authorization Bearer token (src/config/axios-customize.ts:31-34).
+  - auto refresh token khi 401 (mutex chống refresh đồng thời) (src/config/axios-customize.ts:20-29, 49-60).
+  - refresh fail ở admin thì dispatch logout signal (src/config/axios-customize.ts:63-72).
+  - 403 hiện notification (src/config/axios-customize.ts:74-79).
+- Error handling ở UI chủ yếu dùng notification.error/message sau từng call (src/pages/auth/login.tsx:41-47, src/components/client/modal/apply.modal.tsx:44-48).
+
+2.6 Sơ đồ luồng (text) USER routing/auth
+- Guest -> / -> Header/Footer -> Search -> /job?... -> JobCard -> /job/:slug?id=... -> ApplyModal -> (if guest) /login?callback=... -> login success -> quay lại callback
+  (src/components/client/search.client.tsx:54-73, src/components/client/card/job.card.tsx:90-93, src/components/client/modal/apply.modal.tsx:32-35, src/pages/auth/login.tsx:39).
+
+3) ADMIN onboarding
+
+3.1 Entry point, routes, layouts, pages chính (CRUD/tables/forms)
+- Entry admin route: /admin (src/App.tsx:91-151).
+- Layout admin: sidebar menu động theo permission + topbar user + outlet (src/components/admin/layout.admin.tsx:84-166, 202-267).
+- Pages:
+  - Dashboard thống kê (src/pages/admin/dashboard.tsx:35-229)
+  - CRUD Company/User/Permission/Role/Job/Skill/Resume (src/pages/admin/*.tsx, src/pages/admin/job/*.tsx)
+  - Form upsert Job riêng (src/components/admin/job/upsert.job.tsx:214-441)
+  - Modal CRUD: modal.company, modal.user, modal.permission, modal.role, modal.skill.
+
+3.2 Auth/role-based access, guards
+- Route-level:
+  - ProtectedRoute yêu cầu authenticated và chặn NORMAL_USER (src/components/share/protected-route.ts/index.tsx:6-35).
+- Feature-level:
+  - Access kiểm tra permission (apiPath+method+module) trước khi render view/button/action (src/components/share/access.tsx:16-35).
+- Menu-level:
+  - LayoutAdmin chỉ show menu item nếu user có permission tương ứng (src/components/admin/layout.admin.tsx:88-156).
+
+3.3 Data fetching, caching, pagination, search, filters
+- Redux slice cho từng module admin (company/user/job/resume/permission/role/skill) với trạng thái isFetching/meta/result (src/redux/slice/*.ts).
+- Bảng dùng ProTable wrapper DataTable (src/components/client/data-table/index.tsx:10-57).
+- Pagination/sort/search:
+  - mỗi page có buildQuery() tạo query page,size,sort,filter rồi dispatch thunk fetch (src/pages/admin/company.tsx:147-190, src/pages/admin/user.tsx:164-204, src/pages/admin/job/job.tsx:185-228, src/pages/admin/resume.tsx:161-198, src/pages/admin/permission.tsx:166-210, src/pages/admin/role.tsx:174-207).
+- Filter syntax:
+  - dùng spring-filter-query-builder (sfLike, sfIn) ở nhiều trang (src/pages/admin/company.tsx:15, src/pages/admin/resume.tsx:14, src/pages/admin/job/job.tsx:15).
+- Caching:
+  - Không có cache layer như React Query; dùng Redux state hiện tại và reload table thủ công (tableRef.current.reload) (src/pages/admin/company.tsx:43-45, tương tự các trang khác).
+
+3.4 Component dùng chung admin, hooks, utils, types
+- Shared admin components:
+  - layout.admin, DebounceSelect, modal.*, view.*, ModuleApi, upsert.job.
+- Hooks: React hooks + useAppDispatch/useAppSelector.
+- Utils/types dùng chung cùng USER (src/config/utils.ts, src/types/backend.d.ts).
+
+3.5 Styling SCSS admin
+- admin.module.scss style shell, sider/menu, pro-table card, dashboard, upsert-job (src/styles/admin.module.scss:8-209).
+- reset.scss can thiệp global cho Pro footer bar, Quill editor, modal animation (src/styles/reset.scss:1-42).
+
+3.6 Luồng API và xử lý lỗi (ADMIN)
+- CRUD call qua config/api.ts modules:
+  - /api/v1/admin/jobs riêng admin job (src/config/api.ts:131-159)
+  - modules còn lại /api/v1/companies|users|roles|permissions|resumes....
+- Xử lý lỗi:
+  - từng page kiểm tra res.data/res.statusCode rồi show message/notification (src/pages/admin/job/job.tsx:26-37, src/pages/admin/company.tsx:28-39).
+- Auth session:
+  - refresh token tự động trong interceptor (src/config/axios-customize.ts:49-60).
+  - refresh fail (admin) -> signal global -> LayoutApp clear token + điều hướng login (src/config/axios-customize.ts:63-72, src/components/share/layout.app.tsx:18-24).
+
+3.7 Sơ đồ luồng (text) ADMIN auth/routing
+- /admin/* -> ProtectedRoute
+  - isLoading=true => Loading
+  - !isAuthenticated => redirect /login
+  - authenticated + role != NORMAL_USER => render page
+  - ngược lại NotPermitted
+  (src/components/share/protected-route.ts/index.tsx:17-35).
+
+4) File quan trọng và vai trò
+
+- src/App.tsx — router chính, tách layout USER/ADMIN, route map.
+- src/components/admin/layout.admin.tsx — khung admin + menu động theo permission.
+- src/components/share/protected-route.ts/index.tsx — guard auth/role cấp route.
+- src/components/share/access.tsx — guard permission cấp component/action.
+- src/config/axios-customize.ts — interceptor auth, refresh token, lỗi 403/refresh fail.
+- src/config/api.ts — toàn bộ API client.
+- src/redux/store.ts + src/redux/slice/* — state toàn app.
+- src/pages/admin/* + src/components/admin/* — toàn bộ vận hành quản trị.
+- src/pages/home|job|company|skills|auth/* + src/components/client/* — toàn bộ trải nghiệm người dùng.
+- src/styles/client.module.scss, admin.module.scss, auth.module.scss, app.module.scss, reset.scss — hệ style chính.
+
+5) Điểm cần cải thiện
+
+USER (đề xuất riêng)
+1. Đồng bộ path param vs query param ở trang detail
+   - Route khai báo /job/:id, /company/:id nhưng page lại đọc searchParams.get("id") (src/App.tsx:83,86; src/pages/job/detail.tsx:26; src/pages/company/detail.tsx:17).
+   - Nên chuẩn hóa dùng useParams + fallback query để tránh URL lệch chuẩn SEO/điều hướng.
+
+2. Giảm rủi ro XSS từ HTML backend
+   - Có render HTML trực tiếp: parse(...) và dangerouslySetInnerHTML (src/pages/job/detail.tsx:104, src/pages/company/detail.tsx:51, src/components/client/job/job-detail-bullet-section.tsx:30-33).
+   - Nên sanitize trước khi render.
+
+3. Auth bootstrap bỏ sót route forgot-password
+   - App chỉ skip fetchAccount cho /login và /register (src/App.tsx:68-71), có thể không cần gọi account tại /forgot-password.
+   - Nên đưa route này vào danh sách skip.
+
+ADMIN (đề xuất riêng)
+1. Bug check permission menu Permission
+   - viewPermission đang so method với ALL_PERMISSIONS.USERS.GET_PAGINATE.method thay vì PERMISSIONS (src/components/admin/layout.admin.tsx:113-116).
+   - Dễ làm menu Permission hiển thị sai theo quyền.
+
+2. Role guard cứng theo tên role
+   - RoleBaseRoute hard-code userRole !== 'NORMAL_USER' (src/components/share/protected-route.ts/index.tsx:8-13).
+   - Nên chuyển sang guard theo permission/claim để scale đa role.
+
+3. Query filter build thủ công ở vài trang
+   - Một số nơi ghép string filter thủ công (src/pages/admin/permission.tsx:169-176, src/pages/admin/job/job.tsx:188-196) dễ lỗi escape/ký tự đặc biệt.
+   - Nên thống nhất dùng helper builder cho toàn bộ admin query/filter.
